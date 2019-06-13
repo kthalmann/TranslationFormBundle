@@ -4,6 +4,7 @@ namespace A2lix\TranslationFormBundle\TranslationForm;
 
 use Symfony\Component\Form\FormRegistry,
     Doctrine\Common\Persistence\ManagerRegistry;
+use Symfony\Component\HttpKernel\Kernel;
 
 /**
  * @author David ALLIX
@@ -84,12 +85,20 @@ abstract class TranslationForm implements TranslationFormInterface
             $options['field_type'] = $typeGuess->getType();
         }
 
-        if (!isset($options['pattern']) && ($patternGuess = $guesser->guessPattern($class, $property))) {
-            $options['pattern'] = $patternGuess->getValue();
-        }
-
-        if (!isset($options['max_length']) && ($maxLengthGuess = $guesser->guessMaxLength($class, $property))) {
-            $options['max_length'] = $maxLengthGuess->getValue();
+        if (Kernel::VERSION_ID > '20512') {
+            if (!isset($options['attr']['maxlength']) && ($maxLengthGuess = $guesser->guessMaxLength($class, $property))) {
+                $options['attr']['maxlength'] = $maxLengthGuess->getValue();
+            }
+            if (!isset($options['attr']['pattern']) && ($patternGuess = $guesser->guessPattern($class, $property))) {
+                $options['attr']['pattern'] = $patternGuess->getValue();
+            }
+        } else {
+            if (!isset($options['max_length']) && ($maxLengthGuess = $guesser->guessMaxLength($class, $property))) {
+                $options['max_length'] = $maxLengthGuess->getValue();
+            }
+            if (!isset($options['pattern']) && ($patternGuess = $guesser->guessPattern($class, $property))) {
+                $options['pattern'] = $patternGuess->getValue();
+            }
         }
 
         return $options;
